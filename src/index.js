@@ -6,10 +6,10 @@ dotenv.config({
     path: './.env'
 })
 
-
+const port = process.env.PORT || 8000
 connectDB()
 .then(() => {
-    app.listen(process.env.PORT || 8000, () => console.log(`Listening Port: ${process.env.PORT}`))
+    app.listen(port, () => console.log(`Listening Port: ${port}`))
     app.on("error", (err) => {
         console.log("Express server error", err);
         throw err;

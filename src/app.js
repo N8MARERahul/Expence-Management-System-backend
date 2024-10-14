@@ -15,8 +15,10 @@ app.use(morgan('dev'))
 
 // import routes
 import transactionRoutes from "./routes/transactions.routes.js"
+import usersRoutes from "./routes/users.routes.js"
 
 // route declaration
 app.use("/api/v1/transactions", transactionRoutes)
-app.use("/api/v1/userLogin", )
+app.use("/api/v1/users", usersRoutes)
+
 export { app }

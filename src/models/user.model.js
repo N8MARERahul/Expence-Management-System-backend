@@ -55,7 +55,7 @@ userSchema.methods.generateRefreshToken = async () => {
         {
             _id: this._id,
         },
-        process.env.ACCESS_TOKEN_SECRET,
+        process.env.REFRESH_TOKEN_SECRET,
         { 
             expiresIn: "1d" 
         }

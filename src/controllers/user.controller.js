@@ -1,14 +1,14 @@
-import { User } from "../models/user.model"
-import { ApiError } from "../utils/ApiError"
-import { ApiResponse } from "../utils/ApiResponse"
-import { asyncHandler } from "../utils/asyncHandler"
+import { User } from "../models/user.model.js"
+import { sendError as ApiError } from "../utils/ApiError.js"
+import { ApiResponse } from "../utils/ApiResponse.js"
+import { asyncHandler } from "../utils/asyncHandler.js"
 import jwt from "jsonwebtoken"
 
 const generateAccessAndRefreshTokens = async(userId) => {
     try {
         const user = await User.findById(userId)
-        const accessToken = user.generateAccessToken()
-        const refreshToken = user.generateRefreshToken()
+        const accessToken = await user.generateAccessToken()
+        const refreshToken = await user.generateRefreshToken()
 
         user.refreshToken = refreshToken
 
@@ -17,7 +17,7 @@ const generateAccessAndRefreshTokens = async(userId) => {
         return { accessToken, refreshToken }
 
     } catch (error) {
-        new ApiError(500, "Error while generating access and refresh token")
+        return ApiError(res, 500, "Error while generating access and refresh token")
     }
 }
 
@@ -30,7 +30,7 @@ const registerUser = asyncHandler( async (req, res) => {
     const { fullName, email, password, username } = req.body
 
     if ([fullName, email, password, username].some(field => field?.trim() === "")) {
-        new ApiError(400, "All fields are required")
+        return ApiError(res, 400, "All fields are required")
     }
 
     const existedUser = await User.findOne({
@@ -38,20 +38,20 @@ const registerUser = asyncHandler( async (req, res) => {
     })
 
     if (existedUser) {
-        new ApiError(409, "User with username or email already exists")
+        return ApiError(res, 409, "User with username or email already exists")
     }
 
     const user = await User.create({
         fullName,
         email,
         password,
-        username: username.toLowerCase()
+        username: username?.toLowerCase()
     })
 
     const createdUser = await User.findById(user._id).select("-password -refreshToken")
 
     if (!createdUser) {
-        new ApiError(500, "Server error! Failed to register user")
+        return ApiError(res, 500, "Server error! Failed to register user")
     }
 
     return res.status(201).json(
@@ -63,7 +63,7 @@ const loginUser = asyncHandler(async (req, res) => {
     const { email, username, password } = req.body
 
     if (!(email || username)) {
-        new ApiError(400, "Email or username is required")
+        return ApiError(res, 400, "Email or username is required")
     }
 
     const user = await User.findOne({
@@ -71,13 +71,13 @@ const loginUser = asyncHandler(async (req, res) => {
     })
 
     if (!user) {
-        new ApiError(404, "User not found!")
+        return ApiError(res, 404, "User not found!")
     }
 
     const isPasswordValid = await user.isPasswordCorrect(password)
 
     if (!isPasswordValid) {
-        new ApiError(401, "Invalid password!")
+        return ApiError(res, 401, "Invalid password!")
     }
 
     const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id)
@@ -132,7 +132,7 @@ const refreshAccessToken = asyncHandler( async (req, res) => {
     const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken
 
     if (!incomingRefreshToken) {
-        new ApiError(401, "Unauthorized Request")
+        return ApiError(res, 401, "Unauthorized Request")
     }
 
     try {
@@ -144,11 +144,11 @@ const refreshAccessToken = asyncHandler( async (req, res) => {
         const user = await User.findById(decodedToken?._id)
 
         if (!user) {
-            new ApiError(401, "Invalid Refresh Token")
+            return ApiError(res, 401, "Invalid Refresh Token")
         }
 
         if (incomingRefreshToken !== user?.refreshToken) {
-            new ApiError(401, "Refresh Token invalid or expired")
+            return ApiError(res, 401, "Refresh Token invalid or expired")
         }
 
         const { accessToken, newRefreshToken } = await generateAccessAndRefreshTokens(user._id)
@@ -168,7 +168,7 @@ const refreshAccessToken = asyncHandler( async (req, res) => {
             )
         )
     } catch (error) {
-        new ApiError(401, error?.message || "Invalid refresh Token")
+        return ApiError(res, 401, error?.message || "Invalid refresh Token")
     }
 })
 
@@ -179,7 +179,7 @@ const changeCurrentPassword = asyncHandler( async (req, res) => {
     const isPasswordCorrect = await user.isPasswordCorrect(currentPassword)
 
     if (!isPasswordCorrect) {
-        new ApiError(400, "Invalid current password")
+        return ApiError(res, 400, "Invalid current password")
     }
 
     user.password = newPassword
@@ -212,7 +212,7 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
     const { fullName, email } = req.body
 
     if (!fullName || !email) {
-        new ApiError(400, "Full Name and Email are required")
+        return ApiError(res, 400, "Full Name and Email are required")
     }
 
     const user = await User.findByIdAndUpdate(

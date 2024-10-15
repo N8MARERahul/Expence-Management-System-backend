@@ -23,4 +23,8 @@ import usersRoutes from "./routes/users.routes.js"
 app.use("/api/v1/transactions", transactionRoutes)
 app.use("/api/v1/users", usersRoutes)
 
+app.get("/", (req, res) => {
+    res.send("Hello World!")
+})
+
 export { app }

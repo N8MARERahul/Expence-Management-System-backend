@@ -4,7 +4,7 @@ import { ApiResponse } from "../utils/ApiResponse.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
 import jwt from "jsonwebtoken"
 
-const generateAccessAndRefreshTokens = async(userId) => {
+const generateAccessAndRefreshTokens = async(userId, res) => {
     try {
         const user = await User.findById(userId)
         const accessToken = await user.generateAccessToken()
@@ -80,7 +80,7 @@ const loginUser = asyncHandler(async (req, res) => {
         return ApiError(res, 401, "Invalid password!")
     }
 
-    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id)
+    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id, res)
 
     const loggedInUser = await User.findById(user._id).select("-password -refreshToken")
 

@@ -24,7 +24,8 @@ const addIncome = asyncHandler( async (req, res) => {
         amount,
         category,
         description,
-        date
+        date,
+        user: req.user._id
     })
 
     const addedIncome = await Income.findById(income._id)
@@ -38,9 +39,9 @@ const addIncome = asyncHandler( async (req, res) => {
 })
 
 const getIncomes = asyncHandler( async(req, res) => {
-    const incomes = await Income.find().sort({createdAt: -1})
+    const incomes = await Income.find({user: req.user._id}).sort({createdAt: -1})
 
-    if (incomes.length === 0) {
+    if (!incomes || incomes.length === 0) {
         return res.status(404).json( new ApiError(404, "No income found!"))
     }
 

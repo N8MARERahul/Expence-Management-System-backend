@@ -24,7 +24,8 @@ const addExpense = asyncHandler( async (req, res) => {
         amount,
         category,
         description,
-        date
+        date,
+        user: req.user._id
     })
 
     const addedExpense = await Expense.findById(expense._id)
@@ -38,7 +39,7 @@ const addExpense = asyncHandler( async (req, res) => {
 })
 
 const getExpenses = asyncHandler( async(req, res) => {
-    const expenses = await Expense.find().sort({createdAt: -1})
+    const expenses = await Expense.find({user: req.user._id}).sort({createdAt: -1})
 
     if (expenses.length === 0) {
         return res.status(404).json( new ApiError(404, "No Expense found!"))

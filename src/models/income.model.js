@@ -33,6 +33,11 @@ const incomeSchema = new Schema({
         required: true,
         maxLength: 20,
         trim: true
+    },
+    user: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+        required: true
     }
 }, { timestamps: true })
 

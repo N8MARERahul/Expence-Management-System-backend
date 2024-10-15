@@ -10,10 +10,11 @@ class ApiError{
     }
 }
 
-function sendError(res, statusCode, message) {
+function sendError(res, statusCode, message, data={}) {
     res.status(statusCode).json({
         success: false,
-        message: message
+        message: message,
+        data: data,
     })
 }
 

@@ -1,4 +1,4 @@
-class ApiError {
+class ApiError{
     constructor(
         statusCode,
         message= "Something went wrong",
@@ -10,4 +10,12 @@ class ApiError {
     }
 }
 
-export { ApiError }
+function sendError(res, statusCode, message) {
+    res.status(statusCode).json({
+        success: false,
+        message: message
+    })
+}
+
+
+export { ApiError, sendError }

@@ -49,6 +49,38 @@ const getIncomes = asyncHandler( async(req, res) => {
     .json(new ApiResponse(200, incomes, "Income Fetched Successfully"))
 })
 
+const updateIncome = asyncHandler( async(req, res) => {
+    const { id: incomeId } = req.params
+    const { title, amount, category, description, date } = req.body
+    
+    if (!incomeId ||!title ||!category ||!amount ||!description ||!date) {
+        return res.status(400).json(new ApiError(400, "All fields are required!"))
+    }
+    
+    if (amount < 0 ||!amount === 'number') {
+        return res.status(400).json(new ApiError(400, "Amount must be Positive Number!"))
+    }
+    
+    if(description.length >= 20) {
+        return res.status(400).json(new ApiError(400, "Maximum Description Length 20 character!"))
+    }
+    
+    const updatedIncome = await Income.findByIdAndUpdate(incomeId, {
+        title,
+        amount,
+        category,
+        description,
+        date
+    }, { new: true })
+
+    if(!updatedIncome) {
+        return res.status(404).json(new ApiError(404, "Expense not found!"))
+    }
+
+    return res.status(200)
+   .json(new ApiResponse(200, updatedIncome, "Income updated Successfully"))
+})
+
 const deleteIncome = asyncHandler( async(req, res) => {
     const { id: incomeId } = req.params
 
@@ -67,4 +99,4 @@ const deleteIncome = asyncHandler( async(req, res) => {
     ))
 })
 
-export { addIncome, getIncomes, deleteIncome }
+export { addIncome, getIncomes, deleteIncome, updateIncome }
